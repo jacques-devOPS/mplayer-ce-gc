@@ -1141,3 +1141,12 @@ dhahelperclean:
 # Disable suffix rules.  Most of the builtin rules are suffix rules,
 # so this saves some time on slow systems.
 .SUFFIXES:
+
+# gc-build: compile without "make clean" (clean deletes tracked files).
+# Lists tracked files the build modified, so they can be reviewed.
+gc-build:
+	$(MAKE) all
+	@echo "== tracked files modified by build:"
+	@git status --porcelain --untracked-files=no
+
+.PHONY: gc-build
