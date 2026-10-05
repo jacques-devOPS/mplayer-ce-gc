@@ -112,7 +112,7 @@ void mpviSetup(int video_mode, bool overscan)
 			vmode = &TVNtsc480Prog;
 			break;
 		case 3:		// PAL (50Hz)
-			vmode = &TVPal574IntDfScale;
+			vmode = &TVPal576IntDfScale;
 			break;
 		case 4:		// PAL (60Hz)
 			vmode = &TVEurgb60Hz480IntDf;
