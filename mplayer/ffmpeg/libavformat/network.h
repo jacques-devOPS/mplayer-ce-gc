@@ -75,8 +75,6 @@ static inline int _net_result(s32 ret)
 	_net_result(net_close(sockfd))
 #define setsockopt(s, level, optname, optval, optlen) \
 	_net_result(net_setsockopt(s, level, optname, optval, optlen))
-#define poll(fds, nfds, timeout) \
-	_net_result(net_poll((struct pollsd *)fds, nfds, timeout))
 #define gethostbyname(name) net_gethostbyname(name)
 #endif
 
