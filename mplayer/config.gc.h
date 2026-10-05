@@ -469,7 +469,7 @@ char MPLAYER_LIBDIR[100];
 #define HAVE_INLINE_ASM 1
 #define HAVE_ISATTY 0
 #define HAVE_LDBRX 0
-#define HAVE_POLL_H 0
+#define HAVE_POLL_H 1
 #define HAVE_PPC4XX 0
 #define HAVE_STRERROR_R 1
 #define HAVE_SYMVER_ASM_LABEL 0
