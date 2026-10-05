@@ -97,7 +97,7 @@
 #ifdef GEKKO
 #define HAVE_PTHREADS 1
 #include <ogc/mutex.h>
-typedef mutex_t pthread_mutex_t;
+#define pthread_mutex_t mutex_t /* newlib now defines pthread_mutex_t */
 #define pthread_mutex_init(a, b) LWP_MutexInit(a, false)
 #define pthread_mutex_lock(a)    LWP_MutexLock(*a)
 #define pthread_mutex_unlock(a)  LWP_MutexUnlock(*a)
