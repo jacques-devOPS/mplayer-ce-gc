@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <limits.h>
+#include <sys/param.h>
 #include <locale.h>
 
 #ifdef GEKKO
