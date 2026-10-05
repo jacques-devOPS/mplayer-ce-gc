@@ -396,7 +396,7 @@ static int wait_for_network_initialisation()
 	{
 		if (initialise_network() >= 0) {
 			char myIP[16];
-			if (if_config(myIP, NULL, NULL, true) < 0)
+			if (if_config(myIP, NULL, NULL, true, 20) < 0)
 			{
 				sleep(5);
 				continue;
