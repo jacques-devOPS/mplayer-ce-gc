@@ -41,7 +41,7 @@ CFLAGS_SVGALIB_HELPER    =
 CFLAGS_TREMOR_LOW        = 
 
 EXTRALIBS          = -mogc -ffast-math   -lfreetype -liconv -lfribidi -laesnd -ltinysmb -lbba -lfat -logc -static -L$(DEVKITPRO)/libogc/lib/cube -L$(DEVKITPRO)/portlibs/ppc/lib  -lm
-EXTRALIBS_MPLAYER  = -specs=mplayer.spec 
+EXTRALIBS_MPLAYER  = 
 EXTRALIBS_MENCODER = 
 
 GETCH = getch2-gekko.c
