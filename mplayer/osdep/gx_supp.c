@@ -98,7 +98,6 @@ static f32 UVtexcoords[] ATTRIBUTE_ALIGN(32) = {
 	0.0, 1.0,
 };
 
-void DCBlockFlush(void *);
 
 void mpviSetup(int video_mode, bool overscan)
 {
@@ -459,7 +458,7 @@ void mpgxUpdateSquare()
 	mysquare[5] -= m_screenbottom_shift * 100.0;
 	mysquare[7] -= m_screenbottom_shift * 100.0;
 	
-	DCBlockFlush(mysquare);
+	DCFlushRange(mysquare, 32);
 	GX_SetArray(GX_VA_POS, mysquare, sizeof(f32) * 2);
 	GX_InvVtxCache();
 }
