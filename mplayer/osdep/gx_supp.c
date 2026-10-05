@@ -518,8 +518,8 @@ void mpgxConfigYUVp(u32 luma_width, u32 luma_height, u32 chroma_width, u32 chrom
 	Ytexcoords[5] = Ytexcoords[7] = YtexcoordT;
 	UVtexcoords[5] = UVtexcoords[7] = UVtexcoordT;
 	
-	DCBlockFlush(Ytexcoords);
-	DCBlockFlush(UVtexcoords);
+	DCFlushRange(Ytexcoords, 32);
+	DCFlushRange(UVtexcoords, 32);
 	
 	//init YUV texture objects
 	GX_InitTexObj(&YtexObj, Ytexture, Ywidth, Yheight, GX_TF_I8, GX_CLAMP, GX_CLAMP, GX_FALSE);
