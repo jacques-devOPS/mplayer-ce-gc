@@ -404,6 +404,7 @@ static int wait_for_network_initialisation()
 			else
 			{
 				network_initied=1;
+				printf("Network: IP %s\n", myIP);
 				usleep(1000);
 				return 1;
 			}
@@ -411,6 +412,7 @@ static int wait_for_network_initialisation()
 		sleep(5);
 	}
 	
+	printf("Network: init FAILED\n");
 	return 0;
 }
 
