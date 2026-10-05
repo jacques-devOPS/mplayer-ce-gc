@@ -644,6 +644,8 @@ SRCS_MPLAYER_GEKKO-$(HW_RVL) += osdep/ave-rvl.c \
                                 libao2/ao_gekko.c \
                                 osdep/mload.c \
 
+SRCS_MPLAYER_GEKKO-$(HW_DOL) += osdep/gc_stack.c
+
 SRCS_MPLAYER-$(GEKKO) += osdep/log_console.c \
                          osdep/gx_supp.c \
                          osdep/glob_gekko.c \
