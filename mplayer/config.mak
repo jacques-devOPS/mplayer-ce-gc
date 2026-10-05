@@ -40,7 +40,7 @@ CFLAGS_STACKREALIGN      =
 CFLAGS_SVGALIB_HELPER    = 
 CFLAGS_TREMOR_LOW        = 
 
-EXTRALIBS          = -mogc -ffast-math   -lfreetype -liconv -lfribidi -laesnd -ltinysmb -lbba -lfat -logc -static -L$(DEVKITPRO)/libogc/lib/cube -L$(DEVKITPRO)/portlibs/ppc/lib  -lm
+EXTRALIBS          = -mogc -ffast-math   -lfreetype -lpng16 -lz -lbz2 -lbrotlidec -lbrotlicommon -liconv -lfribidi -laesnd -ltinysmb -lbba -lfat -logc -static -L$(DEVKITPRO)/libogc/lib/cube -L$(DEVKITPRO)/portlibs/ppc/lib  -lm
 EXTRALIBS_MPLAYER  = 
 EXTRALIBS_MENCODER = 
 
