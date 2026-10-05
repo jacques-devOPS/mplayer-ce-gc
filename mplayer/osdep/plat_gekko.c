@@ -117,8 +117,10 @@ static bool exit_automount_thread = false;
 #include <di/di.h>
 
 #include <fat.h>
+#ifdef HW_RVL
 #include <ntfs.h>
 #include <ext2.h>
+#endif
 #include "iso.h"
 #include "fst.h"
 #include "gcfst.h"
