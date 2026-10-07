@@ -132,8 +132,22 @@ static const DISC_INTERFACE *dvd = &__io_wiidvd;
 #else
 static const DISC_INTERFACE *dvd = &__io_gcdvd;
 #endif
-static const DISC_INTERFACE *carda = &__io_gcsda;
-static const DISC_INTERFACE *cardb = &__io_gcsdb;
+/* GameCube EXI/SD storage table. One entry per DISC_INTERFACE; adding a
+ * device (IDE-EXI, MMCE, GCLoader ...) is one line here once its driver is
+ * available. Names are the devoptab mount prefixes ("carda:/", "sd2:/"). */
+typedef struct {
+	const char *name;
+	const char *label;
+	const DISC_INTERFACE *io;
+	bool mounted;
+} gc_storage_t;
+
+static gc_storage_t gc_storage[] = {
+	{ "carda", "SD Gecko Slot A", &__io_gcsda, false },
+	{ "cardb", "SD Gecko Slot B", &__io_gcsdb, false },
+	{ "sd2",   "SD2SP2",          &__io_gcsd2, false },
+};
+#define GC_STORAGE_COUNT (sizeof(gc_storage) / sizeof(gc_storage[0]))
 
 typedef struct _PARTITION_RECORD {
 	u8 status;
@@ -163,9 +177,7 @@ typedef struct _MASTER_BOOT_RECORD {
 #define PARTITION_TYPE_LINUX			0x83
 
 enum {
-	DEVICE_CARDA = 0,
-	DEVICE_CARDB,
-	DEVICE_DVD,
+	DEVICE_DVD = 0,
 #ifdef HW_RVL
 	DEVICE_SD,
 	DEVICE_USB,
@@ -232,26 +244,20 @@ static void mountproc()
 	}
 #endif
 	
-	if (isInserted[DEVICE_CARDA]) {
-		if (!carda->isInserted()) {
-			fatUnmount("carda:");
-			carda->shutdown();
-			isInserted[DEVICE_CARDA] = false;
+	for (int i = 0; i < GC_STORAGE_COUNT; i++) {
+		gc_storage_t *d = &gc_storage[i];
+		char prefix[16];
+		
+		if (d->mounted) {
+			if (!d->io->isInserted()) {
+				snprintf(prefix, sizeof(prefix), "%s:", d->name);
+				fatUnmount(prefix);
+				d->io->shutdown();
+				d->mounted = false;
+			}
+		} else if (d->io->startup() && d->io->isInserted()) {
+			d->mounted = fatMount(d->name, d->io, 0, 4, 64);
 		}
-	} else if (carda->startup() && carda->isInserted()) {
-		fatMount("carda", carda, 0, 4, 64);
-		isInserted[DEVICE_CARDA] = true;
-	}
-	
-	if (isInserted[DEVICE_CARDB]) {
-		if (!cardb->isInserted()) {
-			fatUnmount("cardb:");
-			cardb->shutdown();
-			isInserted[DEVICE_CARDB] = false;
-		}
-	} else if (cardb->startup() && cardb->isInserted()) {
-		fatMount("cardb", cardb, 0, 4, 64);
-		isInserted[DEVICE_CARDB] = true;
 	}
 }
 
@@ -625,17 +631,45 @@ static bool DetectValidPath()
 	}
 #endif
 	
-	if (isInserted[DEVICE_CARDA] && !(FindDevice("carda:") < 0)) {
-		if (CheckPath("carda:/apps/mplayer-ce")) return true;
-		if (CheckPath("carda:/mplayer")) return true;
-	}
-	
-	if (isInserted[DEVICE_CARDB] && !(FindDevice("cardb:") < 0)) {
-		if (CheckPath("cardb:/apps/mplayer-ce")) return true;
-		if (CheckPath("cardb:/mplayer")) return true;
+	for (int i = 0; i < GC_STORAGE_COUNT; i++) {
+		char path[64];
+		
+		if (!gc_storage[i].mounted)
+			continue;
+		
+		snprintf(path, sizeof(path), "%s:/apps/mplayer-ce", gc_storage[i].name);
+		if (CheckPath(path)) return true;
+		snprintf(path, sizeof(path), "%s:/mplayer", gc_storage[i].name);
+		if (CheckPath(path)) return true;
 	}
 	
 	return false;
+}
+
+/* Launcher-supplied location: Swiss and other loaders pass the DOL path as
+ * argv[0] ("sd2:/apps/mplayer-ce/mplayer.dol"). Strip the file name and
+ * accept the directory if mplayer.conf is there. */
+static bool DetectLaunchPath(int argc, char **argv)
+{
+	char path[100];
+	char *slash;
+	
+	if (argc < 1 || !argv || !argv[0] || !strchr(argv[0], ':'))
+		return false;
+	
+	strncpy(path, argv[0], sizeof(path) - 1);
+	path[sizeof(path) - 1] = 0;
+	
+	slash = strrchr(path, '/');
+	if (!slash || slash == path)
+		return false;
+	*slash = 0;
+	
+	if (FindDevice(path) < 0)
+		return false;
+	
+	printf("Launcher path: %s\n", path);
+	return CheckPath(path);
 }
 
 static char *default_args[] = {
@@ -682,11 +716,18 @@ void plat_init(int *argc, char **argv[])
 	log_console_init(vmode, 0);
 	mountproc();
 	
-	if (!DetectValidPath()) {
-		printf("\nSD/USB access failed\n");
+	if (!DetectLaunchPath(*argc, *argv) && !DetectValidPath()) {
+		printf("\nStorage access failed\n");
 		printf("Please check that you have installed MPlayer CE in the right folder\n");
 		printf("Valid folders:\n");
+#ifdef HW_RVL
 		printf(" sd:/apps/mplayer-ce\n sd:/mplayer\n usb:/apps/mplayer-ce\n usb:/mplayer\n");
+#else
+		for (int i = 0; i < GC_STORAGE_COUNT; i++)
+			printf(" %s:/apps/mplayer-ce  %s:/mplayer  (%s%s)\n", gc_storage[i].name,
+			       gc_storage[i].name, gc_storage[i].label,
+			       gc_storage[i].mounted ? "" : ", not mounted");
+#endif
 		
 		sleep(10);
 		mpviClear();
