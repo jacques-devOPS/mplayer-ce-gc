@@ -348,81 +348,21 @@ fast_pause();
 strcpy(menu_dir,mpriv->dir);
 
 #ifdef GEKKO
-  if(!strcmp(mpriv->dir,"carda:/"))
+  if(!strcmp(mpriv->dir,"carda:/") || !strcmp(mpriv->dir,"cardb:/") || !strcmp(mpriv->dir,"sd2:/"))
   {
-	if(FindDevice("carda:") < 0)
+	char dev[16];
+	snprintf(dev, sizeof(dev), "%s", mpriv->dir);
+	*strchr(dev, '/') = 0;                       /* "carda:/" -> "carda:" */
+	if(FindDevice(dev) < 0)
 	{
+		char msg[64];
+		snprintf(msg, sizeof(msg), "%s device not mounted",
+		         !strcmp(dev,"carda:") ? "Slot-A SD" :
+		         !strcmp(dev,"cardb:") ? "Slot-B SD" : "SD2SP2");
 		rm_osd_msg(OSD_MSG_TEXT);
-	  	set_osd_msg(OSD_MSG_TEXT, 1, 2000, "Slot-A SD device not mounted");
-	  	update_osd_msg();
+	 	set_osd_msg(OSD_MSG_TEXT, 1, 2000, msg);
+	 	update_osd_msg();
 		mp_input_queue_cmd(mp_input_parse_cmd("menu show"));
-		goto error_exit;
-	}
-  }
-  else if(!strcmp(mpriv->dir,"cardb:/"))
-  {
-	if(FindDevice("cardb:") < 0)
-	{
-		rm_osd_msg(OSD_MSG_TEXT);
-	  	set_osd_msg(OSD_MSG_TEXT, 1, 2000, "Slot-B SD device not mounted");
-	  	update_osd_msg();
-		mp_input_queue_cmd(mp_input_parse_cmd("menu show"));
-		goto error_exit;
-	}
-  }
-#ifdef HW_RVL
-  else if(!strcmp(mpriv->dir,"dvd:/"))
-  {  
-	  if(!DVDGekkoMount())
-	  {
-	    rm_osd_msg(OSD_MSG_TEXT);
-  		set_osd_msg(OSD_MSG_TEXT, 1, 2000, "Error mounting DVD");
-  		update_osd_msg();
-  		mp_input_queue_cmd(mp_input_parse_cmd("menu show"));
-		  goto error_exit;
-	  }
-  }
-  else if(!strcmp(mpriv->dir,"sd:/"))
-  {
-	if(FindDevice("sd:") < 0)
-	{
-		rm_osd_msg(OSD_MSG_TEXT);
-	  	set_osd_msg(OSD_MSG_TEXT, 1, 2000, "Front SD device not mounted");
-	  	update_osd_msg();
-		mp_input_queue_cmd(mp_input_parse_cmd("menu show"));
-		goto error_exit;
-	}
-  }
-  else if(!strcmp(mpriv->dir,"usb:/"))
-  {
-  	if(FindDevice("usb:") < 0)
-	{
-		rm_osd_msg(OSD_MSG_TEXT);
-	  	set_osd_msg(OSD_MSG_TEXT, 1, 2000, "FAT USB device not mounted");
-	  	update_osd_msg();
-  		mp_input_queue_cmd(mp_input_parse_cmd("menu show"));
-		goto error_exit;
-	}
-  }
-  else if(!strcmp(mpriv->dir,"ntfs:/"))
-  {
-  	if(FindDevice("ntfs:") < 0)
-	{
-		rm_osd_msg(OSD_MSG_TEXT);
-		set_osd_msg(OSD_MSG_TEXT, 1, 2000, "NTFS USB device not mounted");
-		update_osd_msg();
-  		mp_input_queue_cmd(mp_input_parse_cmd("menu show"));
-		goto error_exit;
-	}
-  }
-  else if(!strcmp(mpriv->dir,"ext2:/"))
-  {
-  	if(FindDevice("ext2:") < 0)
-	{
-		rm_osd_msg(OSD_MSG_TEXT);
-		set_osd_msg(OSD_MSG_TEXT, 1, 2000, "EXT2 USB device not mounted");
-		update_osd_msg();
-  		mp_input_queue_cmd(mp_input_parse_cmd("menu show"));
 		goto error_exit;
 	}
   }
