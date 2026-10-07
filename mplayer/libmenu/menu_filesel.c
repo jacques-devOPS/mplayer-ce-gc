@@ -366,7 +366,6 @@ strcpy(menu_dir,mpriv->dir);
 		goto error_exit;
 	}
   }
-#endif
   else if(mpriv->dir[0]=='s' && mpriv->dir[1]=='m' && mpriv->dir[2]=='b' && mpriv->dir[4]==':')
   { // reconnect samba if needed
 	  char device[5]="smbx";
