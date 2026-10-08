@@ -255,8 +255,14 @@ static void mountproc()
 				d->io->shutdown();
 				d->mounted = false;
 			}
-		} else if (d->io->startup() && d->io->isInserted()) {
-			d->mounted = fatMount(d->name, d->io, 0, 4, 64);
+		} else {
+			bool up = d->io->startup();
+			bool in = up && d->io->isInserted();
+			if (in)
+				d->mounted = fatMount(d->name, d->io, 0, 4, 64);
+#ifdef HW_DOL
+			printf("%-5s startup=%d inserted=%d mounted=%d\n", d->name, up, in, d->mounted);
+#endif
 		}
 	}
 }
