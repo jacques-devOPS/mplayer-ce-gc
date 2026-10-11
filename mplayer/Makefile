@@ -1152,3 +1152,5 @@ gc-build:
 	@git status --porcelain --untracked-files=no
 
 .PHONY: gc-build
+
+osdep/plat_gekko.o: CFLAGS += -DGC_BUILD_ID='"$(shell git rev-parse --short HEAD)"'

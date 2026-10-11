@@ -39,6 +39,11 @@
 #include "gx_supp.h"
 #include "plat_gekko.h"
 
+#ifndef GC_BUILD_ID
+#define GC_BUILD_ID "unversioned"
+#endif
+
+
 
 #ifdef HW_RVL
 #include "mload.h"
@@ -720,7 +725,20 @@ void plat_init(int *argc, char **argv[])
 	
 	mpviSetup(0, true);
 	log_console_init(vmode, 0);
+#ifdef HW_DOL
+	printf("MPlayer CE GC storage-test %s\n", GC_BUILD_ID);
+	printf("DOL: %s\n", (*argc > 0 && *argv && (*argv)[0]) ? (*argv)[0] : "not supplied");
+#endif
 	mountproc();
+#ifdef HW_DOL
+	/* Keep mount-stage results visible before menu/video initialization. */
+	printf("Storage diagnostics: press A to continue.\n");
+	PAD_Init();
+	do {
+		VIDEO_WaitVSync();
+		PAD_ScanPads();
+	} while (!(PAD_ButtonsDown(0) & PAD_BUTTON_A));
+#endif
 	
 	if (!DetectLaunchPath(*argc, *argv) && !DetectValidPath()) {
 		printf("\nStorage access failed\n");
