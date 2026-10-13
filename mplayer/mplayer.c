@@ -166,7 +166,16 @@ m_config_t* mconfig;
 static int cfg_inc_verbose(m_option_t *conf){ ++verbose; return 0;}
 
 static int cfg_include(m_option_t *conf, char *filename){
-	return m_config_parse_config_file(mconfig, filename);
+	static int depth = 0;
+	if (depth >= 10) {
+		mp_msg(MSGT_CFGPARSER, MSGL_ERR,
+				"config include depth limit reached, skipping %s\n", filename);
+		return -1;
+	}
+	depth++;
+	int r = m_config_parse_config_file(mconfig, filename);
+	depth--;
+	return r;
 }
 
 static int max_framesize=0;
