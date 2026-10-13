@@ -413,22 +413,22 @@ void save_restore_point(char *_filename,int position)
 		return;
 	}
 	//printf("save_restore_point: %s - %d\n",_filename,position);
-	for(j=0;j<MAX_RESTORE_POINTS ;j++)
+	j=-1;
+	for(i=0;i<MAX_RESTORE_POINTS;i++)
 	{
-		if(restore_points[j].filename[0]=='\0' || !strcmp(_filename,restore_points[j].filename))
-		{
+		if(restore_points[i].filename[0]=='\0') { j=i; break; } /* first free slot */
+		if(!strcmp(_filename,restore_points[i].filename)) {
 			// check if position is similar (+- 5 secs)
-			if(restore_points[j].position>=position-5 && restore_points[j].position<=position+5) return;
-			j++;
-			break;
+			if(restore_points[i].position>=position-5 && restore_points[i].position<=position+5) return;
+			j=i; break; /* existing entry: refresh it at the top */
 		}
 	}
-	if(j>1)
-		for(i=j-1;i>0;i--)
-		{
-			strcpy(restore_points[i].filename,restore_points[i-1].filename);
-			restore_points[i].position=restore_points[i-1].position;
-		}
+	if(j<0) j=MAX_RESTORE_POINTS-1; /* full: drop the oldest */
+	for(i=j;i>0;i--)
+	{
+		strcpy(restore_points[i].filename,restore_points[i-1].filename);
+		restore_points[i].position=restore_points[i-1].position;
+	}
 	restore_points[0].position=position;
 	strcpy(restore_points[0].filename,_filename);
 	restore_points_changed=true;
