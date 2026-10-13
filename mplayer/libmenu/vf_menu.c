@@ -71,10 +71,25 @@ void vf_menu_pause_update(struct vf_instance *vf) {
   }
 }
 
+static void menu_pause_gate(int was_show, int paused, struct vf_priv_s *priv)
+{
+  if(!was_show && priv->current->show && !paused) {
+    go2pause = 1;
+    mp_input_queue_cmd(mp_input_parse_cmd("pause"));
+    return;
+  }
+
+  if(was_show && !priv->current->show && go2pause) {
+    go2pause = 0;
+    mp_input_queue_cmd(mp_input_parse_cmd("pause"));
+  }
+}
+
 static int cmd_filter(mp_cmd_t* cmd, int paused, struct vf_priv_s * priv) {
 
   switch(cmd->id) {
   case MP_CMD_MENU : {  // Convert txt cmd from the users into libmenu stuff
+    int was_show = priv->current->show;
     char* arg = cmd->args[0].v.s;
 
     if (!priv->current->show && strcmp(arg,"hide"))
@@ -105,9 +120,12 @@ static int cmd_filter(mp_cmd_t* cmd, int paused, struct vf_priv_s * priv) {
       priv->current->show = 0;
     else
       mp_msg(MSGT_GLOBAL,MSGL_WARN,MSGTR_LIBMENU_UnknownMenuCommand,arg);
+
+    menu_pause_gate(was_show, paused, priv);
     return 1;
   }
   case MP_CMD_SET_MENU : {
+    int was_show = priv->current->show;
     char* menu = cmd->args[0].v.s;
     menu_t* l = priv->current;
     priv->current = menu_open(menu);
@@ -119,6 +137,7 @@ static int cmd_filter(mp_cmd_t* cmd, int paused, struct vf_priv_s * priv) {
       priv->current->show = 1;
       priv->current->parent = l;
     }
+    menu_pause_gate(was_show, paused, priv);
     return 1;
   }
   }
