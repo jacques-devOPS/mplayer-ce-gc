@@ -133,5 +133,6 @@ void free_mp_image(mp_image_t* mpi);
 mp_image_t* alloc_mpi(int w, int h, unsigned long int fmt);
 void mp_image_alloc_planes(mp_image_t *mpi);
 void copy_mpi(mp_image_t *dmpi, mp_image_t *mpi);
+void clear_mpi(mp_image_t *mpi);
 
 #endif /* MPLAYER_MP_IMAGE_H */
