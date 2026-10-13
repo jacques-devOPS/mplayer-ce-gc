@@ -651,6 +651,7 @@ SRCS_MPLAYER-$(GEKKO) += osdep/log_console.c \
                          osdep/glob_gekko.c \
                          osdep/plat_gekko.c \
                          osdep/gc_fatfs.c \
+                         osdep/gc_tokeninject.c \
                          fs/fatfs/ff.c \
                          fs/fatfs/ffunicode.c \
                          fs/fatfs/diskio.c \

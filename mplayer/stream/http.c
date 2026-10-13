@@ -35,6 +35,7 @@
 
 #include "http.h"
 #include "url.h"
+#include "osdep/gc_tokeninject.h"
 #include "mp_msg.h"
 
 #include "stream.h"
@@ -895,6 +896,15 @@ static int open_s1(stream_t *stream,int mode, void* opts, int* file_format) {
 	if( stream->streaming_ctrl==NULL ) {
 		return STREAM_ERROR;
 	}
+	/* Jellyfin tokenless playlists: append api_key from token.cache. */
+	{
+		char jc_url[2048];
+		if (gc_jellyfin_inject(stream->url, jc_url, sizeof(jc_url)) == 0
+		    && strcmp(jc_url, stream->url) != 0) {
+			char *jc_dup = strdup(jc_url);
+			if (jc_dup) { free(stream->url); stream->url = jc_dup; }
+		}
+	}
 	stream->streaming_ctrl->bandwidth = network_bandwidth;
 	url = url_new(stream->url);
 	stream->streaming_ctrl->url = check4proxies(url);
@@ -923,6 +933,15 @@ static int open_s2(stream_t *stream,int mode, void* opts, int* file_format) {
 	stream->streaming_ctrl = streaming_ctrl_new();
 	if( stream->streaming_ctrl==NULL ) {
 		return STREAM_ERROR;
+	}
+	/* Jellyfin tokenless playlists: append api_key from token.cache. */
+	{
+		char jc_url[2048];
+		if (gc_jellyfin_inject(stream->url, jc_url, sizeof(jc_url)) == 0
+		    && strcmp(jc_url, stream->url) != 0) {
+			char *jc_dup = strdup(jc_url);
+			if (jc_dup) { free(stream->url); stream->url = jc_dup; }
+		}
 	}
 	stream->streaming_ctrl->bandwidth = network_bandwidth;
 	url = url_new(stream->url);
