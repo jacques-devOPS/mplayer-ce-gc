@@ -670,10 +670,10 @@ include $(SUBDIR)../subdir.mak
 $(SUBDIR)dct-test$(EXESUF): $(SUBDIR)dctref.o
 
 $(SUBDIR)cos_tables.c: $(SUBDIR)costablegen$(HOSTEXESUF)
-	$(M)./$< > $@
+	$(M)[ -f $@ ] || ./$< > $@
 
 $(SUBDIR)sin_tables.c: $(SUBDIR)costablegen$(HOSTEXESUF)
-	$(M)./$< sin > $@
+	$(M)[ -f $@ ] || ./$< sin > $@
 
 ifdef CONFIG_MPEGAUDIO_HP
 $(SUBDIR)mpegaudio_tablegen$(HOSTEXESUF): HOSTCFLAGS += -DFRAC_BITS=23
@@ -698,7 +698,8 @@ GEN_HEADERS = cbrt_tables.h aacps_tables.h aac_tables.h dv_tables.h     \
 GEN_HEADERS := $(addprefix $(SUBDIR), $(GEN_HEADERS))
 
 $(GEN_HEADERS): $(SUBDIR)%_tables.h: $(SUBDIR)%_tablegen$(HOSTEXESUF)
-	$(M)./$< > $@
+## pinned: regenerate only when missing
+	$(M)[ -f $@ ] || ./$< > $@
 
 ifdef CONFIG_HARDCODED_TABLES
 $(SUBDIR)aacdec.o: $(SUBDIR)cbrt_tables.h
