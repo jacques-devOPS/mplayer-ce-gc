@@ -434,7 +434,7 @@ retry:
 
   if (menu_keepdir) {
   	char file[100];
-	sprintf(file,"%s/%s",MPLAYER_DATADIR,MENU_KEEP_PATH);	
+	snprintf(file,sizeof(file),"%s/%s",MPLAYER_DATADIR,MENU_KEEP_PATH);	
 
     path_fp = open (file, O_CREAT | O_WRONLY | O_TRUNC, 0666);
     if (path_fp >= 0) {

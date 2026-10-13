@@ -323,7 +323,7 @@ void load_restore_points()
 		restore_points[i].position=0;
 	}
 	if(!enable_restore_points)return;
-	sprintf(aux,"%s/%s",MPLAYER_DATADIR,"restore_points");
+	snprintf(aux,sizeof(aux),"%s/%s",MPLAYER_DATADIR,"restore_points");
 	f=fopen(aux,"r");
 	if(f==NULL) return;
 	setvbuf(f,NULL,_IONBF,0);
@@ -347,7 +347,7 @@ void save_restore_points_file()
 	
 	if(buff==NULL)buff=malloc(sizeof(char)*MAX_RESTORE_POINTS*1024); //created only once
 	buff[0]='\0';
-	sprintf(aux,"%s/%s",MPLAYER_DATADIR,"restore_points");
+	snprintf(aux,sizeof(aux),"%s/%s",MPLAYER_DATADIR,"restore_points");
 	//printf("saving rp: %s\n------------------\n",aux);
 	f=fopen(aux,"wb+");
 	if(f==NULL)
@@ -360,7 +360,7 @@ void save_restore_points_file()
 	for(i=0;i<MAX_RESTORE_POINTS && restore_points[i].filename[0]!='\0';i++)
 	{
 		//fprintf(f,"%s\t%i\n",restore_points[i].filename,restore_points[i].position);
-		sprintf(aux,"%s\t%i\n",restore_points[i].filename,restore_points[i].position);
+		snprintf(aux,sizeof(aux),"%s\t%i\n",restore_points[i].filename,restore_points[i].position);
 		strcat(buff,aux);
 		//printf("%s\t%i\n",restore_points[i].filename,restore_points[i].position);		
 	}
@@ -1053,7 +1053,7 @@ static void parse_cfgfiles( m_config_t* conf )
 char *conffile;
 char cad[100];
 int conffile_fd;
-sprintf(cad,"%s%s",MPLAYER_CONFDIR,"/mplayer.conf");
+snprintf(cad,sizeof(cad),"%s%s",MPLAYER_CONFDIR,"/mplayer.conf");
 if (!disable_system_conf &&
     m_config_parse_config_file(conf, cad) < 0)
   exit_player(EXIT_NONE);
@@ -3351,7 +3351,7 @@ stream_set_interrupt_callback(mp_input_check_interrupt);
        mp_msg(MSGT_CPLAYER, MSGL_V, MSGTR_MenuInitialized, menu_cfg);
      else {
      	char cad[100];
-       sprintf(cad,"%s%s",MPLAYER_CONFDIR,"/menu.conf");
+       snprintf(cad,sizeof(cad),"%s%s",MPLAYER_CONFDIR,"/menu.conf");
        if(menu_init(mpctx, cad))
          mp_msg(MSGT_CPLAYER,MSGL_INFO,MSGTR_MenuInitialized, cad);
        else {
