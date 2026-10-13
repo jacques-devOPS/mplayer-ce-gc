@@ -300,7 +300,6 @@ static char **get_extensions(menu_t *menu){
     }
     e = malloc(s+1);
     extensions = realloc(extensions, ++n * sizeof(*extensions));
-    extensions = realloc(extensions, ++n * sizeof(*extensions));
     strcpy (e, ext);
     for (l=extensions; *l; l++);
     *l++ = e;
