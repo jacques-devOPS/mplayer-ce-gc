@@ -415,11 +415,12 @@ void cache_uninit(stream_t *s) {
   cache_vars_t* c = s->cache_data;
   
 #if defined(GEKKO)
-  if(!s->cache_pid) return; 
-  cache_do_control(s, -2, NULL);
-  c->thread_active = 0;
-  LWP_JoinThread(s->cache_pid, NULL);  
-  s->cache_pid = 0;
+  if(s->cache_pid) {
+    cache_do_control(s, -2, NULL);
+    c->thread_active = 0;
+    LWP_JoinThread(s->cache_pid, NULL);
+    s->cache_pid = 0;
+  }
 #ifdef HW_DOL
   free(gekko_stack);
   gekko_stack = NULL;
