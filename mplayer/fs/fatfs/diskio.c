@@ -1,6 +1,7 @@
 /* MPlayer CE GameCube port: FatFs disk interface on libogc DISC_INTERFACE.
  * FatFs (C)ChaN, via swiss-gc; disk glue (this file) GPL v2+ per MPlayer CE. */
 
+#include "ff.h"
 #include "diskio.h"
 #include <ogc/disc_io.h>
 
@@ -37,16 +38,20 @@ DSTATUS disk_initialize(BYTE pdrv)
     return 0;
 }
 
-DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
+DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count, BYTE opt)
 {
+    (void)opt;
+
     const DISC_INTERFACE *io = ff_ifaces[pdrv];
     if (!io) return RES_NOTRDY;
     if (!io->readSectors((sec_t)sector, (sec_t)count, buff)) return RES_ERROR;
     return RES_OK;
 }
 
-DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
+DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count, BYTE opt)
 {
+    (void)opt;
+
     const DISC_INTERFACE *io = ff_ifaces[pdrv];
     if (!io) return RES_NOTRDY;
     if (!io->writeSectors((sec_t)sector, (sec_t)count, (void *)buff)) return RES_ERROR;
@@ -72,4 +77,10 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 DWORD get_fattime(void)
 {
     return ((DWORD)(2020 - 1980) << 25) | (1 << 21) | (1 << 16);
+}
+DRESULT disk_shutdown(BYTE pdrv)
+{
+    const DISC_INTERFACE *io = ff_ifaces[pdrv];
+    (void)io;
+    return RES_OK;
 }

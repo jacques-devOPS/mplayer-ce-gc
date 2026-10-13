@@ -86,7 +86,6 @@ static void seterr(struct _reent *r, FRESULT res)
     case FR_DENIED: case FR_LOCKED:
         r->_errno = EACCES; break;
     case FR_TOO_MANY_OPEN_FILES: r->_errno = EMFILE; break;
-    case FR_DISK_FULL: r->_errno = ENOSPC; break;
     default: r->_errno = EINVAL; break;
     }
 }
@@ -96,7 +95,7 @@ static void seterr(struct _reent *r, FRESULT res)
 static int ff_open_r(struct _reent *r, void *fileStruct,
                      const char *path, int flags, int mode)
 {
-    FIL *fp = (FIL *)fileStruct;
+    FFFIL *fp = (FFFIL *)fileStruct;
     fatfs_dev_t *d = find_by_prefix(path);
     BYTE fa = 0;
     char vp[FF_MAX_LFN * 2 + 8];
@@ -123,7 +122,7 @@ static int ff_open_r(struct _reent *r, void *fileStruct,
 
 static int ff_close_r(struct _reent *r, void *fd)
 {
-    FRESULT res = f_close((FIL *)fd);
+    FRESULT res = f_close((FFFIL *)fd);
     if (res != FR_OK) { seterr(r, res); return -1; }
     return 0;
 }
@@ -131,7 +130,7 @@ static int ff_close_r(struct _reent *r, void *fd)
 static ssize_t ff_write_r(struct _reent *r, void *fd, const char *ptr, size_t len)
 {
     UINT bw = 0;
-    FRESULT res = f_write((FIL *)fd, ptr, len, &bw);
+    FRESULT res = f_write((FFFIL *)fd, ptr, len, &bw);
     if (res != FR_OK) { seterr(r, res); return -1; }
     return bw;
 }
@@ -139,14 +138,14 @@ static ssize_t ff_write_r(struct _reent *r, void *fd, const char *ptr, size_t le
 static ssize_t ff_read_r(struct _reent *r, void *fd, char *ptr, size_t len)
 {
     UINT br = 0;
-    FRESULT res = f_read((FIL *)fd, ptr, len, &br);
+    FRESULT res = f_read((FFFIL *)fd, ptr, len, &br);
     if (res != FR_OK) { seterr(r, res); return -1; }
     return br;
 }
 
 static off_t ff_seek_r(struct _reent *r, void *fd, off_t pos, int dir)
 {
-    FIL *fp = (FIL *)fd;
+    FFFIL *fp = (FFFIL *)fd;
     FSIZE_t base;
     switch (dir) {
     case SEEK_SET: base = 0; break;
@@ -165,7 +164,7 @@ static int ff_fstat_r(struct _reent *r, void *fd, struct stat *st)
     if (!st) { r->_errno = EINVAL; return -1; }
     memset(st, 0, sizeof(*st));
     st->st_mode = S_IFREG | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-    st->st_size = (off_t)f_size((FIL *)fd);
+    st->st_size = (off_t)f_size((FFFIL *)fd);
     st->st_blksize = 512;
     st->st_blocks = (st->st_size + 511) / 512;
     return 0;
@@ -178,7 +177,7 @@ static int stat_common(fatfs_dev_t *d, const char *path, struct stat *st)
     if (!st) return -1;
     memset(st, 0, sizeof(*st));
     mkvol(d, vp, sizeof(vp), path, 1);
-    if (f_stat(vp, &fno) != FR_OK) {
+    if (f_stat(vp, &fno, NULL) != FR_OK) {
         /* root dir */
         if (!strcmp(vp + strlen(d->name) ? "" : "", "")) {}
         st->st_mode = S_IFDIR;
@@ -236,7 +235,8 @@ static int ff_chdir_r(struct _reent *r, const char *name)
     /* validate */
     {
         FILINFO fno;
-        FRESULT res = f_stat(vp, &fno);
+        FATFS *fsp = NULL;
+    FRESULT res = f_stat(vp, &fno, &fsp);
         if (res != FR_OK && strcmp(vp + 2, "/")) { seterr(r, res); return -1; }
     }
     /* store as our cwd (strip "N:" prefix) */
@@ -280,7 +280,7 @@ static int ff_mkdir_r(struct _reent *r, const char *path, int mode)
 /* ---- dir ops ---- */
 
 typedef struct {
-    DIR dir;
+    FFDIR dir;
 } fatfs_dir_state_t;
 
 static DIR_ITER *ff_diropen_r(struct _reent *r, DIR_ITER *dirState, const char *path)
@@ -297,7 +297,7 @@ static DIR_ITER *ff_diropen_r(struct _reent *r, DIR_ITER *dirState, const char *
 
 static int ff_dirreset_r(struct _reent *r, DIR_ITER *dirState)
 {
-    FRESULT res = f_dirrewind(&((fatfs_dir_state_t *)dirState->dirStruct)->dir);
+    FRESULT res = f_rewinddir(&((fatfs_dir_state_t *)dirState->dirStruct)->dir);
     if (res != FR_OK) { seterr(r, res); return -1; }
     return 0;
 }
@@ -352,17 +352,17 @@ static int ff_statvfs_r(struct _reent *r, const char *path, struct statvfs *buf)
 static int ff_ftruncate_r(struct _reent *r, void *fd, off_t len)
 {
     FRESULT res;
-    FSIZE_t cur = f_tell((FIL *)fd);
-    f_lseek((FIL *)fd, (FSIZE_t)len);
-    res = f_truncate((FIL *)fd);
-    f_lseek((FIL *)fd, cur);
+    FSIZE_t cur = f_tell((FFFIL *)fd);
+    f_lseek((FFFIL *)fd, (FSIZE_t)len);
+    res = f_truncate((FFFIL *)fd);
+    f_lseek((FFFIL *)fd, cur);
     if (res != FR_OK) { seterr(r, res); return -1; }
     return 0;
 }
 
 static int ff_fsync_r(struct _reent *r, void *fd)
 {
-    FRESULT res = f_sync((FIL *)fd);
+    FRESULT res = f_sync((FFFIL *)fd);
     if (res != FR_OK) { seterr(r, res); return -1; }
     return 0;
 }
@@ -387,7 +387,7 @@ static ssize_t ff_readlink_r(struct _reent *r, const char *p, char *b, size_t s)
 static void fill_ops(devoptab_t *ops)
 {
     memset(ops, 0, sizeof(*ops));
-    ops->structSize = sizeof(FIL);
+    ops->structSize = sizeof(FFFIL);
     ops->open_r = ff_open_r;
     ops->close_r = ff_close_r;
     ops->write_r = ff_write_r;
@@ -453,7 +453,6 @@ int gc_fatfs_unmount(const char *name)
         if (!strcmp(devs[i].name, name)) {
             char vp[8];
             snprintf(vp, sizeof(vp), "%d:", devs[i].vol);
-            f_mount(NULL, vp, 0);
             RemoveDevice(vp);
             fatfs_detach(devs[i].vol);
             /* compact not needed; slots stay reserved */
