@@ -27,3 +27,5 @@ void cache_uninit(stream_t *s);
 int cache_do_control(stream_t *stream, int cmd, void *arg);
 
 #endif /* MPLAYER_CACHE2_H */
+
+int stream_error(stream_t *stream);
