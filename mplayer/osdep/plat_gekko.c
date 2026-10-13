@@ -30,6 +30,7 @@
 #include <ogc/lwp.h>
 
 #include "config.h"
+#include "gc_fatfs.h"
 #include "parser-cfg.h"
 #include "mpbswap.h"
 #include "mp_osd.h"
@@ -256,7 +257,7 @@ static void mountproc()
 		if (d->mounted) {
 			if (!d->io->isInserted()) {
 				snprintf(prefix, sizeof(prefix), "%s:", d->name);
-				fatUnmount(prefix);
+				if (0) fatUnmount(prefix); gc_fatfs_unmount(d->name);
 				d->io->shutdown();
 				d->mounted = false;
 			}
@@ -264,7 +265,7 @@ static void mountproc()
 			bool up = d->io->startup();
 			bool in = up && d->io->isInserted();
 			if (in)
-				d->mounted = fatMount(d->name, d->io, 0, 4, 64);
+				d->mounted = (gc_fatfs_mount(d->name, d->io) >= 0);
 #ifdef HW_DOL
 			printf("%-5s startup=%d inserted=%d mounted=%d\n", d->name, up, in, d->mounted);
 #endif
