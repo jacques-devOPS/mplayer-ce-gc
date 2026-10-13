@@ -289,6 +289,7 @@ bool IsLoopAvi(char *_file)
 {
 	int i,j;
 	if(_file==NULL)_file=fileplaying;
+	if(_file==NULL)return false;
 	j=strlen(_file);
 	for(i=j-1;i>=0;i--)
 	{
@@ -884,7 +885,7 @@ void uninit_player(unsigned int mask){
 void exit_player_with_rc(enum exit_reason how, int rc)
 {
 #ifdef GEKKO
-  if(mpctx->sh_video && how==EXIT_QUIT) save_restore_point(fileplaying,demuxer_get_current_time(mpctx->demuxer));
+  if(mpctx->sh_video && mpctx->demuxer && how==EXIT_QUIT) save_restore_point(fileplaying,demuxer_get_current_time(mpctx->demuxer));
 #endif
 
 #ifdef CONFIG_NETWORKING
@@ -4717,7 +4718,7 @@ if (mpctx->sh_audio) mpctx->audio_out->reset();
 
 if(mpctx->eof == PT_NEXT_SRC || mpctx->eof == PT_STOP /*|| mpctx->eof == PT_NEXT_ENTRY*/ || error_playing)
 {
-	save_restore_point(fileplaying,demuxer_get_current_time(mpctx->demuxer));
+	save_restore_point(fileplaying,mpctx->demuxer ? demuxer_get_current_time(mpctx->demuxer) : 0);
 }else delete_restore_point(fileplaying);
 
 

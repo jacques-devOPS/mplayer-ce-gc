@@ -61,6 +61,7 @@
 #include "sub/ass_mp.h"
 #include "m_struct.h"
 #include "libmenu/menu.h"
+extern char *filename;
 #include "gui/interface.h"
 #include "sub/eosd.h"
 #include "pnm_loader.h"
@@ -2917,6 +2918,7 @@ int run_command(MPContext *mpctx, mp_cmd_t *cmd)
                            (mpctx->playtree_iter, 0, 1) != PLAY_TREE_ITER_END)
                         /* NOP */ ;
                     play_tree_free_list(mpctx->playtree->child, 1);
+                    filename = NULL; /* stale: entry strings freed */
                     play_tree_set_child(mpctx->playtree, e);
                     pt_iter_goto_head(mpctx->playtree_iter);
                     mpctx->eof = PT_NEXT_SRC;
@@ -2940,6 +2942,7 @@ int run_command(MPContext *mpctx, mp_cmd_t *cmd)
                                != PLAY_TREE_ITER_END)
                             /* NOP */ ;
                         play_tree_free_list(mpctx->playtree->child, 1);
+                        filename = NULL; /* stale: entry strings freed */
                         play_tree_set_child(mpctx->playtree, e);
                         pt_iter_goto_head(mpctx->playtree_iter);
                         mpctx->eof = PT_NEXT_SRC;
