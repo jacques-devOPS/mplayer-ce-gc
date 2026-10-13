@@ -548,6 +548,10 @@ int stream_enable_cache(stream_t *stream,int size,int min,int seek_limit){
 	s->thread_active = 1;
 #ifdef HW_DOL
 	gekko_stack = memalign(32, GEKKO_THREAD_STACKSIZE);
+	if(!gekko_stack) {
+		mp_msg(MSGT_CACHE, MSGL_ERR, "cache: thread stack allocation failed\n");
+		goto err_out;
+	}
 #endif
 	memset(gekko_stack, 0x00, GEKKO_THREAD_STACKSIZE);
 	LWP_CreateThread(&stream->cache_pid, ThreadProc, s, gekko_stack,
