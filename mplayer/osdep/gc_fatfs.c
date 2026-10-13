@@ -436,6 +436,24 @@ int gc_fatfs_mount(const char *name, const DISC_INTERFACE *io)
 
     snprintf(vp, sizeof(vp), "%d:", d->vol);
     if (f_mount(&d->fs, vp, 1) != FR_OK) { io->shutdown(); return -1; }
+
+    /* Validate the full chain before trusting the volume: read sector 0.
+     * Replaces the libogc2 bytesPerSector check (field absent in 3.1 ABI):
+     * proves probe -> EXI -> driver -> 512-byte sector read all work. */
+    {
+        BYTE sect0[512];
+        UINT br = 0;
+        FFFIL probe;
+        if (f_open(&probe, vp, FA_READ) == FR_OK) {
+            FRESULT res = f_read(&probe, sect0, sizeof(sect0), &br);
+            f_close(&probe);
+            if (res != FR_OK || br != sizeof(sect0)) {
+                f_mount(NULL, vp, 0);
+                io->shutdown();
+                return -1;
+            }
+        }
+    }
     fatfs_attach(d->vol, io);
 
     fill_ops(&d->ops);
