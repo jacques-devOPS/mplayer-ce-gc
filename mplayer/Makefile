@@ -654,6 +654,7 @@ SRCS_MPLAYER-$(GEKKO) += osdep/log_console.c \
                          fs/fatfs/ff.c \
                          fs/fatfs/ffunicode.c \
                          fs/fatfs/diskio.c \
+                         fs/mmce/mmce.c \
                          $(SRCS_MPLAYER_GEKKO-yes)
 
 SRCS_MPLAYER = command.c \
